@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/header/page";
 import { Toaster } from "@/components/ui/toaster";
-
+import { ToastContainer, toast } from "react-toastify";
 //
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
-        className={` antialiased px-10 py-5 max-w-screen-2xl mx-auto bg-black`}
+        className={` antialiased px-10 py-5 max-w-screen-2xl mx-auto bg-black relative`}
         style={{
           backgroundImage: "url('/img/background.png')",
           backgroundPosition: "center",
@@ -28,6 +28,7 @@ export default function RootLayout({
       >
         <Header />
         {children}
+        <ToastContainer />
         <Toaster />
       </body>
     </html>

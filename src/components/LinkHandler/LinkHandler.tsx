@@ -1,5 +1,4 @@
 "use client";
-import { toast } from "@/hooks/use-toast";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import React from "react";
+import { Bounce, toast } from "react-toastify";
 
 const LinkHandler = ({
   data,
@@ -18,11 +18,19 @@ const LinkHandler = ({
   OriginalLink?: string;
 }) => {
   const CopyClipBoard = () => {
-    toast({
-      title: "Copy Successfull !",
-      description: data,
+    toast.success(`Copy successfull:  ${data} `, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      transition: Bounce,
     });
-    return navigator.clipboard.writeText(data);
+
+    return navigator.clipboard.writeText(OriginalLink!);
   };
 
   return (

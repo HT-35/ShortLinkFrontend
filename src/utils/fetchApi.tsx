@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 import queryString from "query-string";
 
 // Send data JSON
@@ -34,10 +33,6 @@ export const sendRequest = async <T,>(props: IRequest) => {
   if (url?.startsWith("localhost")) {
     url = `http://${url}`;
   }
-
-  //if (queryParams) {
-  //  url = `${url}?${queryString.stringify(queryParams)}`;
-  //}
 
   return fetch(url, options).then((res) => {
     if (res.ok) {

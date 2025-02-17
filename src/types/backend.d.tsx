@@ -4,7 +4,7 @@ declare global {
   // type truyền vào fetchApi để call api
   interface IRequest {
     url: string;
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
     body?: { [key: string]: any };
     queryParams?: any;
     useCredentials?: boolean;
@@ -23,17 +23,13 @@ declare global {
     data?: T;
   }
 
-  // type dữ liệu User trả về khi call Api
-  export interface IUser {
-    _id: string | undefined;
-    accessToken: string | undefined;
-    name: string | undefined;
-    phone: string | undefined;
-    address: string | undefined;
-    roles: string | undefined;
-    email?: string | undefined;
-    cart?: any;
+  interface ICreateLink {
+    shortLink: string;
+    originalLink: string;
+    expireDate: string;
   }
+
+  // type dữ liệu User trả về khi call Api
 
   export interface IRegisterUser {
     _id: string;
@@ -43,24 +39,5 @@ declare global {
 
     isActive: boolean;
     __v: 0;
-  }
-
-  interface initialDataAccount {
-    _id?: string;
-    accessToken?: string;
-    name?: string;
-    phone?: string;
-    address?: string;
-    email?: string;
-    cart?: any;
-    roles?: string;
-  }
-
-  interface initialDataProduct {
-    _id?: string;
-    name?: string;
-    price?: string;
-    salePrice?: string;
-    image?: string;
   }
 }

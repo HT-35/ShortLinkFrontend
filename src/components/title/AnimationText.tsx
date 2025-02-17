@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import SplitType from "split-type";
 
@@ -11,14 +11,9 @@ const AnimationText = ({
   className?: string;
 }) => {
   const textRef = useRef<HTMLHeadingElement | null>(null);
-  const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient || !textRef.current) return;
+  useLayoutEffect(() => {
+    if (!textRef.current) return;
 
     const text = new SplitType(textRef.current, { types: "chars" });
 
@@ -36,14 +31,14 @@ const AnimationText = ({
       ease: "power2.in",
       delay: 1,
     });
-  }, [isClient]);
-
-  if (!isClient) return null;
+  }, []);
 
   return (
     <h1
       ref={textRef}
-      className={`text-[60px] select-none text-white ${className}`}
+      className={` select-none  ${
+        className ? `${className}` : "text-[60px] text-white"
+      }`}
     >
       {title}
     </h1>
