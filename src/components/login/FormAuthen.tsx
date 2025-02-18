@@ -18,14 +18,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { sendRequest } from "@/utils/fetchApi";
 import { listAPi } from "@/utils/ListApi/listAPI";
 import { Bounce, toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export function FormAuthen({
-  active = "login",
+  active = true,
   setActive,
 }: {
-  active: "login" | "register" | "";
-  setActive: (active: "login" | "register" | "") => void;
+  active: boolean;
+  setActive: (active: boolean) => void;
 }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -35,14 +37,34 @@ export function FormAuthen({
       password,
     };
 
-    const res = await sendRequest<IBackendRes<any>>({
-      url: login ? listAPi.login() : listAPi.register(),
-      method: "POST",
-      body: { ...data },
-      useCredentials: true,
-    });
+    // const res = await sendRequest<IBackendRes<any>>({
+    //   url: login ? listAPi.login() : listAPi.register(),
+    //   method: "POST",
+    //   body: { ...data },
+    //   useCredentials: true,
+    // });
+
+    let res;
+    if (login) {
+      res = await sendRequest<IBackendRes<any>>({
+        url: listAPi.login(),
+        method: "POST",
+        body: { ...data },
+      });
+    } else {
+      res = await sendRequest<IBackendRes<any>>({
+        url: listAPi.register(),
+        method: "POST",
+        body: { ...data },
+      });
+    }
 
     if (res.statusCode === 200) {
+      setTimeout(() => {
+        setActive(false);
+        window.location.reload();
+      }, 1000);
+
       toast.success("Login Successful !", {
         position: "top-right",
         autoClose: 5000,
@@ -59,8 +81,23 @@ export function FormAuthen({
         path: "/",
         sameSite: "Lax",
       });
+    } else if (res.statusCode === 201) {
+      toast.success("Register Successful ! Login Now", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+      });
+      setActive(true);
     } else {
-      toast.error("Email or Password something wrong !", {
+      let message = "";
+      if (res.message == "Account is exist !") {
+        message = "Account is exist !";
+      } else {
+        message = "Email or Password something wrong !";
+      }
+
+      toast.error(message, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -72,8 +109,6 @@ export function FormAuthen({
         transition: Bounce,
       });
     }
-
-    console.log(res);
   };
 
   return (
@@ -82,7 +117,7 @@ export function FormAuthen({
     >
       <div
         className="absolute top-0 right-0 w-5  h-5 flex justify-center items-center  p-4 rounded-2xl cursor-pointer"
-        onClick={() => setActive("")}
+        onClick={() => setActive(false)}
       >
         <FontAwesomeIcon icon={faX} className="w-5 h-5 text-black" />
       </div>

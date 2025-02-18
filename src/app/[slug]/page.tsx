@@ -9,8 +9,10 @@ const Redirect = ({ params }: { params: { slug: string } }) => {
   const box = {
     width: 100,
     height: 100,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 5,
+    borderRadius: 50,
+    backgroundImage: "url('/img/logo_boostech.png')",
+    backgroundPosition: "center",
+    backgroundSize: "cover",
   };
 
   return (
@@ -33,7 +35,7 @@ const Redirect = ({ params }: { params: { slug: string } }) => {
       {/* <h1 className="Loadding text-2xl text-white">Loadding....</h1> */}
       <AnimationText
         title="Loadding...."
-        className="text-[30px]"
+        className="text-white text-[30px]"
       ></AnimationText>
     </div>
   );

@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     <div className="px-10 py-5 ">
-      <div className="flex flex-col mt-10 justify-center items-center max-w-[960px] mx-auto gap-10">
+      <div className="flex flex-col mt-10 justify-center items-center max-w-[110  0px] mx-auto gap-10">
         <div className="title w-full flex justify-between items-center flex-col gap-5">
           <AnimationText title="Shorten Your Loooong Links :)"></AnimationText>
           <p className="text-lite text-xs select-none">

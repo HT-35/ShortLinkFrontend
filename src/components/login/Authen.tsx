@@ -6,7 +6,7 @@ import { FormAuthen } from "./FormAuthen";
 import Cookies from "js-cookie";
 
 const Authen = () => {
-  const [active, setActive] = useState<"login" | "register" | "">("");
+  const [active, setActive] = useState<boolean>(false);
 
   const [name, setName] = useState<string | undefined>(undefined);
 
@@ -21,25 +21,42 @@ const Authen = () => {
         <div className="flex justify-between gap-5 items-center">
           <Button
             className="px-4 py-2 rounded-full  border-[1px] border-[#353C4A] bg-slate-2"
-            onClick={() => setActive("login")}
+            onClick={() => setActive(true)}
           >
             Login
           </Button>
           <Button
             className="px-5 py-2 rounded-full bg-secondary "
-            onClick={() => setActive("register")}
+            onClick={() => setActive(true)}
           >
             Register Now
           </Button>
         </div>
       ) : (
-        <p>{name}</p>
+        <div className="flex justify-between gap-5 items-center">
+          <p>{name}</p>
+          <Button
+            className="px-5 py-2 rounded-full bg-secondary "
+            onClick={() => {
+              Cookies.remove("name");
+              Cookies.remove("ShortLinkCookie");
+              Cookies.remove("accessToken");
+              window.location.reload();
+            }}
+          >
+            Logout
+          </Button>
+        </div>
       )}
 
       <div
         className={`fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-[60] select-none
          transition-all duration-300
-        ${active === "" ? " opacity-0 pointer-events-none" : " opacity-100 "}
+          ${
+            active
+              ? " opacity-100 pointer-events-auto"
+              : " opacity-0 pointer-events-none"
+          }
         `}
       >
         <FormAuthen active={active} setActive={setActive}></FormAuthen>

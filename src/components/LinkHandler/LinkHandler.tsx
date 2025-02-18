@@ -30,16 +30,16 @@ const LinkHandler = ({
       transition: Bounce,
     });
 
-    return navigator.clipboard.writeText(OriginalLink!);
+    return navigator.clipboard.writeText(data!);
   };
 
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger> {data}</TooltipTrigger>
+          <TooltipTrigger> {OriginalLink || data}</TooltipTrigger>
           <TooltipContent className="bg-white text-black text-sm px-4 py-1 rounded-full font-normal">
-            <p> {OriginalLink ?? data}</p>
+            <p> {data || OriginalLink}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

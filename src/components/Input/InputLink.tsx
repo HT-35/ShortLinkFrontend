@@ -42,65 +42,6 @@ interface ITypeLink {
   expireDate: string;
 }
 
-const links = [
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Active",
-    Date: "3/5/2002",
-  },
-  {
-    ShortLink: "https://boostech.com/startup",
-    OriginalLink:
-      "https://discord.com/channels/1247748058264113225/1247748184130850916",
-    Click: "2000",
-    Status: "Inactive",
-    Date: "3/5/2002",
-  },
-];
-
 async function checkSafeBrowsing(url: string) {
   const apiKey = process.env.googleAPIKey;
   const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`;
@@ -144,11 +85,6 @@ const InputLink = () => {
 
   const [listLink, setListLink] = useState<ITypeLink[]>([]);
 
-  // const [token, setToken] = useState<string | undefined>(undefined);
-  // console.log("🚀 ~ InputLink ~ token:", token);
-
-  // useEffect(() => {}, []);
-
   useEffect(() => {
     if (typeof window === undefined) return;
     const getToken = Cookies.get("accessToken");
@@ -156,18 +92,18 @@ const InputLink = () => {
     const getListLink = async () => {
       let response;
 
-      if (!getToken) {
+      if (getToken) {
         response = await sendRequest<IBackendRes<ICreateLink[]>>({
           method: "GET",
-          url: listAPi.getAllLinkQuickByUUID(),
-          useCredentials: true,
+          url: listAPi.getAllByEmail(),
+          headers: { Authorization: `Bearer ${getToken}` },
         });
         console.log(response);
       } else {
         response = await sendRequest<IBackendRes<ICreateLink[]>>({
           method: "GET",
-          url: listAPi.getAllByEmail(),
-          headers: { Authorization: `Bearer ${getToken}` },
+          url: listAPi.getAllLinkQuickByUUID(),
+          useCredentials: true,
         });
         console.log(response);
       }
@@ -206,22 +142,35 @@ const InputLink = () => {
   const handleCreateShortLink = async () => {
     setLoading(true);
 
+    const getToken = Cookies.get("accessToken");
+
     const bodyReq = {
       numberCharacer: 5,
       link: link,
     };
 
-    const createData = await sendRequest<IBackendRes<ICreateLink>>({
-      method: "POST",
-      url: listAPi.createShortLinkQuick(),
-      body: { ...bodyReq },
-      useCredentials: true,
-    });
-    setLink("");
-    // const item = await createData;
+    let response;
 
-    if (createData.statusCode == 201) {
-      const iosString = createData.data?.expireDate;
+    if (getToken) {
+      response = await sendRequest<IBackendRes<ICreateLink>>({
+        method: "POST",
+        url: listAPi.createShortLink(),
+        body: { ...bodyReq },
+        headers: { Authorization: `Bearer ${getToken}` },
+      });
+    } else {
+      response = await sendRequest<IBackendRes<ICreateLink>>({
+        method: "POST",
+        url: listAPi.createShortLinkQuick(),
+        body: { ...bodyReq },
+        useCredentials: true,
+      });
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    if (response.statusCode == 201) {
+      const iosString = response.data?.expireDate;
 
       const date = new Date(iosString!);
       const formatDate = date.toLocaleDateString("vi-VN");
@@ -229,13 +178,13 @@ const InputLink = () => {
       const newLink: ITypeLink = {
         status: "active",
         click: 0,
-        shortLink: createData.data?.shortLink || "",
-        originalLink: createData.data?.originalLink || "",
+        shortLink: response.data?.shortLink || "",
+        originalLink: response.data?.originalLink || "",
         expireDate: formatDate || "",
       };
       setListLink((item) => [...item, newLink]);
 
-      toast.success("Create Short Link Successful !", {
+      toast.success("Create Short Link Successful", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -247,7 +196,12 @@ const InputLink = () => {
         transition: Bounce,
       });
     } else {
-      toast.error(createData.message, {
+      const message =
+        response.message == "you create 5 short link"
+          ? "You have reached the maximum number of short links"
+          : "Link already exists or invalid";
+
+      toast.error(message, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -260,9 +214,45 @@ const InputLink = () => {
       });
     }
 
-    console.log("🚀 ~ handleCreateShortLink ~ data:", createData);
-
     setLoading(false);
+  };
+
+  const handleDelete = async (shortLink: string) => {
+    const getSlug = shortLink.split("/").pop();
+    const getToken = Cookies.get("accessToken");
+
+    let response;
+    if (getToken) {
+      response = await sendRequest<IBackendRes<ICreateLink>>({
+        method: "DELETE",
+        url: listAPi.deleteLink(getSlug!),
+        headers: { Authorization: `Bearer ${getToken}` },
+      });
+    } else {
+      response = await sendRequest<IBackendRes<ICreateLink>>({
+        method: "DELETE",
+        url: listAPi.deleteLinkQuickByUUID(getSlug!),
+        useCredentials: true,
+      });
+    }
+
+    if (response.statusCode == 200) {
+      setListLink((item) =>
+        item.filter((item) => item.shortLink !== shortLink)
+      );
+
+      toast.success("Delete Short Link Successful !", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+      });
+    } else {
+      toast.error("Delete Short Link Failed !", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
   };
 
   return (
@@ -295,7 +285,10 @@ const InputLink = () => {
           }}
           style={box}
         />
-        <AnimationText title="Loading...." className="text-[30px] text-black" />
+        <AnimationText
+          title="Creating Short Link..."
+          className="text-[30px] text-black"
+        />
       </div>
 
       {/* Nội dung chính */}
@@ -303,7 +296,7 @@ const InputLink = () => {
         <Input
           type="text"
           placeholder="Enter the link here"
-          className="py-7 rounded-full px-10 border-4 border-[#353C4A] text-white"
+          className="py-7 rounded-full px-10 pr-36 border-4 border-[#353C4A] text-white"
           value={link}
           onChange={handleGetUrl}
         />
@@ -335,16 +328,19 @@ const InputLink = () => {
             <TableHead className="text-[#C9CED6] font-bold text-center">
               Status
             </TableHead>
-            <TableHead className="text-right text-[#C9CED6] font-bold">
+            <TableHead className="text-center text-[#C9CED6] font-bold min-w-[200px]">
               Expire Date
+            </TableHead>
+            <TableHead className="text-center text-[#C9CED6] font-bold">
+              Delete
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {listLink.map((item, index) => {
             const OriginLink =
-              item.originalLink.length > 50
-                ? item.originalLink.slice(0, 35).concat("...")
+              item.originalLink.length > 20
+                ? item.originalLink.slice(0, 20).concat("...")
                 : item.originalLink;
 
             return (
@@ -354,8 +350,8 @@ const InputLink = () => {
                 </TableCell>
                 <TableCell className="font-thin">
                   <LinkHandler
-                    data={OriginLink}
-                    OriginalLink={item.originalLink}
+                    data={item.originalLink}
+                    OriginalLink={OriginLink}
                   />
                 </TableCell>
                 <TableCell className="font-thin text-center">
@@ -364,8 +360,16 @@ const InputLink = () => {
                 <TableCell className="font-thin text-center">
                   {item.status}
                 </TableCell>
-                <TableCell className="text-right font-thin ">
+                <TableCell className="text-center font-thin ">
                   {item.expireDate}
+                </TableCell>
+                <TableCell className="text-center font-thin ">
+                  <Button
+                    className="bg-red-500 text-white rounded-full py-2 px-4"
+                    onClick={() => handleDelete(item.shortLink)}
+                  >
+                    Delete
+                  </Button>
                 </TableCell>
               </TableRow>
             );
